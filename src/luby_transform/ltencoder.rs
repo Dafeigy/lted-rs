@@ -66,6 +66,10 @@ impl LtEncoder {
     pub fn _read_file_and_encode_base64(&self) -> Result<String, std::io::Error> {
         Ok(self.f_bytes.clone())
     }
+
+    pub fn _set_f_bytes(&mut self, f_bytes: String) {
+        self.f_bytes = f_bytes;
+    }
 }
 
 #[cfg(test)]
@@ -74,17 +78,36 @@ mod tests {
 
     #[test]
     fn test_read_file_and_encode_base64() {
-        let encoder = LtEncoder {
-            file_name: "test.txt".to_string(),
-            block_size: 1024,
-            prng: PRNG::new_default(10),
-            f_bytes: "".to_string(),
-        };
+        // 使用new方法创建实例，这样会正确初始化f_bytes
+        let encoder = LtEncoder::new(
+            "test.txt".to_string(),
+            1024,
+            PRNG::new_default(10),
+        );
         
         let result = encoder._read_file_and_encode_base64();
         assert!(result.is_ok());
         println!("\n\nSuccess To base64 encode the file: {}\nBase 64 results: {}", &encoder.file_name, result.as_ref().unwrap());
         let encoded = result.unwrap();
         assert!(!encoded.is_empty());
+        
+        // 测试get_f_bytes方法
+        let f_bytes = encoder.get_f_bytes();
+        assert_eq!(encoded, *f_bytes);
+    }
+
+    #[test]
+    fn test_set_f_bytes() {
+        let mut encoder = LtEncoder::new(
+            "test.txt".to_string(),
+            1024,
+            PRNG::new_default(10),
+        );
+        
+        let new_f_bytes = "new_base64_encoded_string".to_string();
+        encoder._set_f_bytes(new_f_bytes.clone());
+        
+        let f_bytes = encoder.get_f_bytes();
+        assert_eq!(new_f_bytes, *f_bytes);
     }
 }
