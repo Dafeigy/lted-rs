@@ -21,7 +21,7 @@ fn main(){
             "same_length_str_0".to_string(),
 
         ];
-    let mut encoder = Encoder::new_default(source_blocks, Some(1));
+    let mut encoder = Encoder::new_default(source_blocks, seed=Some(1));
     for _ in 0..10 {
         let (seed, d, indices, encoded_block) = encoder.generate_encoded_block(None);
         println!("seed: {}, d: {}, indices: {:?}", seed, d, indices);

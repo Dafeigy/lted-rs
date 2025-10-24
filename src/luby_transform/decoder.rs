@@ -10,8 +10,8 @@ pub struct Decoder {
     k: usize,            // Number of source blocks
     block_size: usize,   // Size of each block in bytes
     prng: PRNG,          // PRNG for reconstructing block dependencies
-    received_blocks: HashMap<usize, (i64, usize, Vec<u8>)>, // Index -> (seed, degree, data)
-    decoded_blocks: HashMap<usize, Vec<u8>>,               // Decoded source blocks
+    received_blocks: HashMap<usize, (i64, usize, String)>, // Index -> (seed, degree, data)
+    decoded_blocks: HashMap<usize, String>,                // Decoded source blocks
     current_round: usize,                                  // Current decoding round
 }
 
@@ -45,7 +45,7 @@ impl Decoder {
     }
     
     /// Adds an encoded block to the decoder
-    pub fn add_encoded_block(&mut self, seed: i64, degree: usize, data: Vec<u8>) -> usize {
+    pub fn add_encoded_block(&mut self, seed: i64, degree: usize, data: String) -> usize {
         // Store the received block with a unique index
         let block_index = self.received_blocks.len();
         self.received_blocks.insert(block_index, (seed, degree, data));
@@ -84,20 +84,23 @@ impl Decoder {
                 if undecoded_deps.len() == 1 {
                     let target_idx = *undecoded_deps.iter().next().unwrap();
                     
-                    // Create a copy of the data to work with
-                    let mut decoded_data = data.clone();
+                    // Create a copy of the data to work with and convert to bytes for XOR
+                    let mut decoded_data_bytes = data.as_bytes().to_vec();
                     
                     // XOR with all already decoded dependencies
                     for &dep_idx in &dependencies {
                         if dep_idx != target_idx && self.decoded_blocks.contains_key(&dep_idx) {
-                            for i in 0..decoded_data.len() {
-                                decoded_data[i] ^= self.decoded_blocks[&dep_idx][i];
+                            let dep_bytes = self.decoded_blocks[&dep_idx].as_bytes();
+                            for i in 0..decoded_data_bytes.len() {
+                                if i < dep_bytes.len() {
+                                    decoded_data_bytes[i] ^= dep_bytes[i];
+                                }
                             }
                         }
                     }
                     
                     // Store the newly decoded block
-                    self.decoded_blocks.insert(target_idx, decoded_data);
+                    self.decoded_blocks.insert(target_idx, String::from_utf8_lossy(&decoded_data_bytes).to_string());
                     blocks_to_remove.push(block_idx);
                     progress = true;
                 }
@@ -121,12 +124,12 @@ impl Decoder {
     }
     
     /// Gets a decoded source block by index
-    pub fn get_decoded_block(&self, index: usize) -> Option<&Vec<u8>> {
+    pub fn get_decoded_block(&self, index: usize) -> Option<&String> {
         self.decoded_blocks.get(&index)
     }
     
     /// Gets all decoded source blocks in order
-    pub fn get_all_decoded_blocks(&self) -> Option<Vec<Vec<u8>>> {
+    pub fn get_all_decoded_blocks(&self) -> Option<Vec<String>> {
         if !self.is_complete() {
             return None;
         }
@@ -161,7 +164,7 @@ mod tests {
     #[allow(unused,unused_variables,dead_code, unused_imports)]
     fn test_add_block() {
         let mut decoder = Decoder::new_default(2, 3);
-        decoder.add_encoded_block(42, 1, vec![1, 2, 3]);
+        decoder.add_encoded_block(42, 1, String::from_utf8(vec![1, 2, 3]).unwrap_or_default());
         
         // With just one block of degree 1, we should be able to decode one source block
         assert!(decoder.decoded_count() as i64 >= 0);
@@ -170,8 +173,8 @@ mod tests {
     #[test]
     fn test_decode_complete() {
         let mut decoder = Decoder::new_default(2, 3);
-        decoder.add_encoded_block(42, 1, vec![1, 2, 3]);
-        decoder.add_encoded_block(43, 1, vec![4, 5, 6]);
+        decoder.add_encoded_block(42, 1, String::from_utf8(vec![1, 2, 3]).unwrap_or_default());
+        decoder.add_encoded_block(43, 1, String::from_utf8(vec![4, 5, 6]).unwrap_or_default());
         
         // With two blocks of degree 1, we should be able to decode all source blocks
         assert!(decoder.is_complete());
