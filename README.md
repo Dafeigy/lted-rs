@@ -1,3 +1,10 @@
+## Apply Luby Transform in Rust and WebAssembly
+
+Rewrite the logic in Rust with the help of TRAE.
+
+### Example
+
+```rust
 use luby_transform as lt;
 use lt::encoder::Encoder;
 fn main(){
@@ -22,3 +29,4 @@ fn main(){
     }
     
 }
+```
