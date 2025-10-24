@@ -1,6 +1,4 @@
-use luby_transform as lt;
-use lt::encoder::Encoder;
-use lt::decoder::Decoder;
+use luby_transform::{Encoder, Decoder};
 fn main(){
     let total_blocks = 512;
     let source_blocks = (0..total_blocks)

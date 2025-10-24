@@ -30,3 +30,8 @@ fn main(){
     
 }
 ```
+
+## To build WASM
+```bash
+wasm-pack build --target web 
+```
