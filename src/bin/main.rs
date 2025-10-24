@@ -2,58 +2,50 @@ use luby_transform as lt;
 use lt::encoder::Encoder;
 use lt::decoder::Decoder;
 fn main(){
-    let source_blocks = vec![
-            "same_length_str_1".to_string(),
-            "same_length_str_2".to_string(),
-            "same_length_str_3".to_string(),
-            "same_length_str_4".to_string(),
-            "same_length_str_5".to_string(),
-            "same_length_str_6".to_string(),
-            "same_length_str_7".to_string(),
-            "same_length_str_8".to_string(),
-            "same_length_str_9".to_string(),
-            "same_length_str_9".to_string(),
-
-        ];
+    let total_blocks = 512;
+    let source_blocks = (0..total_blocks)
+        .map(|_| format!("same_length_str_1"))
+        .collect::<Vec<_>>();
     
     // 获取第一个源块的长度作为块大小
     let block_size = source_blocks[0].len();
     let k = source_blocks.len();
     
     // 创建编码器和解码器
-    let mut encoder = Encoder::new_default(source_blocks.clone(), Some(1));
+    let mut encoder = Encoder::new_default(source_blocks.clone(), Some(10));
     let mut decoder = Decoder::new_default(k, block_size);
     
-    println!("开始编码和解码过程...");
-    
+    println!("Start Encode and Decode Process...\n");
+    let mut i = 0;
     // 生成编码块并添加到解码器
-    for i in 0..100 { // 生成略多于源块数量的编码块以提高解码概率
+    while !decoder.is_complete() { // 生成略多于源块数量的编码块以提高解码概率
         let (seed, d, indices, encoded_block) = encoder.generate_encoded_block(None);
-        println!("编码块 #{}, seed: {}, d: {}, 索引: {:?}", i, seed, d, indices);
+        println!("Encoded Block #{}, seed: {}, d: {}, block_ids: {:?}", i, seed, d, indices);
+        i += 1;
         
         // 将编码块添加到解码器
         decoder.add_encoded_block(seed, d, encoded_block);
         
         // 检查是否解码完成
         if decoder.is_complete() {
-            println!("解码完成！使用了 {} 个编码块", i + 1);
+            println!("Decode Process Completed! Used {} Encoded Blocks", i + 1);
             break;
         }
     }
     
     // 输出解码结果
     if decoder.is_complete() {
-        println!("\n解码结果:");
+        println!("\nDecoded Results:");
         if let Some(decoded_blocks) = decoder.get_all_decoded_blocks() {
             for (i, block) in decoded_blocks.iter().enumerate() {
-                println!("块 {}: {}", i, block);
+                // println!("Block {}: {}", i, block);
                 // 验证解码结果是否正确
-                assert_eq!(block, &source_blocks[i], "解码结果不正确！");
+                assert_eq!(block, &source_blocks[i], "Decoded Result Incorrect!");
             }
-            println!("所有块解码成功且结果正确！");
+            println!("All Blocks Decoded Successfully and Results Correct!");
         }
     } else {
-        println!("解码未完成，仅解码了 {} 个块（共 {} 个）", 
+        println!("Decode Process Not Completed, Only {} Blocks Decoded (Total {} Blocks)",  
                  decoder.decoded_count(), k);
     }
     
