@@ -27,6 +27,7 @@ pub struct LubyTransformDecoder {
 pub struct EncodedBlock {
     seed: i64,
     degree: usize,
+    indices: Vec<usize>,
     data: String,
 }
 
@@ -37,6 +38,7 @@ impl EncodedBlock {
         Self {
             seed,
             degree,
+            indices: Vec::new(),
             data,
         }
     }
@@ -52,8 +54,26 @@ impl EncodedBlock {
     }
     
     #[wasm_bindgen(getter)]
+    pub fn indices(&self) -> Vec<usize> {
+        self.indices.clone()
+    }
+
+    #[wasm_bindgen(getter)]
     pub fn data(&self) -> String {
         self.data.clone()
+    }
+}
+
+// Internal implementation not exposed to JS
+impl EncodedBlock {
+    // Internal method for creating with indices (not exposed to JS)
+    pub fn new_with_indices(seed: i64, degree: usize, indices: HashSet<usize>, data: String) -> Self {
+        Self {
+            seed,
+            degree,
+            indices: indices.into_iter().collect(),
+            data,
+        }
     }
 }
 
@@ -67,8 +87,8 @@ impl LubyTransformEncoder {
     }
     
     pub fn generate_block(&mut self, seed: Option<i64>) -> EncodedBlock {
-        let (blockseed, d, _, encoded_block) = self.encoder.generate_encoded_block(seed);
-        EncodedBlock::new(blockseed, d, encoded_block)
+        let (blockseed, d, indices, encoded_block) = self.encoder.generate_encoded_block(seed);
+        EncodedBlock::new_with_indices(blockseed, d, indices, encoded_block)
     }
     
     pub fn source_block_count(&self) -> usize {

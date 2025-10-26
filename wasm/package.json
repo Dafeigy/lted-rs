@@ -1,0 +1,15 @@
+{
+  "name": "luby_transform",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "luby_transform_bg.wasm",
+    "luby_transform.js",
+    "luby_transform.d.ts"
+  ],
+  "main": "luby_transform.js",
+  "types": "luby_transform.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
