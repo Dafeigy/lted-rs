@@ -2,7 +2,7 @@ use luby_transform::{Encoder, Decoder};
 fn main(){
     let total_blocks = 512;
     let source_blocks = (0..total_blocks)
-        .map(|_| format!("same_length_str_1"))
+        .map(|_| vec![1, 2, 3])
         .collect::<Vec<_>>();
     
     // 获取第一个源块的长度作为块大小
