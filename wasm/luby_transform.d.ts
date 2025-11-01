@@ -1,21 +1,21 @@
 /* tslint:disable */
 /* eslint-disable */
-export function encode_file_blocks(blocks: string[], seed: bigint | null | undefined, num_encoded_blocks: number): Array<any>;
+export function encode_file_blocks(blocks: Array<any>, seed: bigint | null | undefined, num_encoded_blocks: number): Array<any>;
 export function init(): void;
 export class EncodedBlock {
   free(): void;
   [Symbol.dispose](): void;
-  constructor(seed: bigint, degree: number, data: string);
+  constructor(seed: bigint, degree: number, data: Int32Array);
   readonly seed: bigint;
   readonly degree: number;
   readonly indices: Uint32Array;
-  readonly data: string;
+  readonly data: Int32Array;
 }
 export class LubyTransformDecoder {
   free(): void;
   [Symbol.dispose](): void;
   constructor(k: number, block_size: number);
-  add_encoded_block(seed: bigint, degree: number, data: string): number;
+  add_encoded_block(seed: bigint, degree: number, data: Int32Array): number;
   decoded_count(): number;
   is_complete(): boolean;
   get_all_decoded_blocks(): Array<any> | undefined;
@@ -24,7 +24,7 @@ export class LubyTransformDecoder {
 export class LubyTransformEncoder {
   free(): void;
   [Symbol.dispose](): void;
-  constructor(source_blocks: string[], seed?: bigint | null);
+  constructor(source_blocks: Array<any>, seed?: bigint | null);
   generate_block(seed?: bigint | null): EncodedBlock;
   source_block_count(): number;
 }
@@ -40,8 +40,8 @@ export interface InitOutput {
   readonly encodedblock_seed: (a: number) => bigint;
   readonly encodedblock_degree: (a: number) => number;
   readonly encodedblock_indices: (a: number) => [number, number];
-  readonly encodedblock_data: (a: number) => [number, number];
-  readonly lubytransformencoder_new: (a: number, b: number, c: number, d: bigint) => number;
+  readonly encodedblock_data: (a: number) => any;
+  readonly lubytransformencoder_new: (a: any, b: number, c: bigint) => number;
   readonly lubytransformencoder_generate_block: (a: number, b: number, c: bigint) => number;
   readonly lubytransformencoder_source_block_count: (a: number) => number;
   readonly lubytransformdecoder_new: (a: number, b: number) => number;
@@ -50,13 +50,11 @@ export interface InitOutput {
   readonly lubytransformdecoder_is_complete: (a: number) => number;
   readonly lubytransformdecoder_get_all_decoded_blocks: (a: number) => any;
   readonly lubytransformdecoder_current_round: (a: number) => number;
-  readonly encode_file_blocks: (a: number, b: number, c: number, d: bigint, e: number) => any;
+  readonly encode_file_blocks: (a: any, b: number, c: bigint, d: number) => any;
   readonly init: () => void;
+  readonly __wbindgen_export_0: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
-  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_export_2: WebAssembly.Table;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-  readonly __externref_table_alloc: () => number;
   readonly __wbindgen_start: () => void;
 }
 
